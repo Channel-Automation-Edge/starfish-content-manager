@@ -113,7 +113,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
             
       const newItem = isEditing ? item : {
         ...item,
-        id: testimonials.length + 1,
+        id: (testimonials.length + 1).toString(), // Convert to string
         img: avatars[testimonials.length % 3]
       };
 
@@ -125,7 +125,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
     } else {
       const newItem = isEditing ? item : {
         ...item,
-        id: faqs.length + 1
+        id: (faqs.length + 1).toString() // Convert to string
       };
 
       setFaqs(prev =>

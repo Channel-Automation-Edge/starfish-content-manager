@@ -45,7 +45,7 @@ function App() {
     } else {
       setIsDataLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, location.pathname]);
 
 
     // log in console
@@ -55,9 +55,6 @@ function App() {
       console.log('Services:', services);
     }
     , [clients, bookings, services]);
-
-    console.log('Supabase password:', import.meta.env.VITE_ADMIN_PASSWORD);
-    console.log('Supabase username:', import.meta.env.VITE_ADMIN_USERNAME);
   
   if (isAuthLoading || isDataLoading) {
     return <div>Loading...</div>;
