@@ -165,7 +165,7 @@ const ClientContentManager = () => {
                           </td>
                           <td className="size-px whitespace-nowrap max-w-sm overflow-hidden">
                             <div className="px-6 py-3 truncate">
-                              <ClipboardButton text={`appt.chau.link/${client.slug}?company_id=${client.id}`} />
+                              <ClipboardButton text={`quote.chau.link/${client.slug}?company_id=${client.id}`} />
                             </div>
                           </td>
                           <td className="size-px whitespace-nowrap">
