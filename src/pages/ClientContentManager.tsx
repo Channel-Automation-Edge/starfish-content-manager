@@ -23,13 +23,24 @@ const ClientContentManager = () => {
 
   // Function to format the updated_at timestamp
   const formatUpdatedAt = (timestamp: string) => {
+    // Parse the timestamp into a Date object
     const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', {
+  
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      console.error('Invalid date:', timestamp);
+      return 'Invalid Date';
+    }
+  
+    // Format the date and time
+    return date.toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      second: '2-digit',
+      timeZone: 'UTC', // Ensure the time is displayed in UTC
     });
   };
 
@@ -138,18 +149,22 @@ const ClientContentManager = () => {
                               </label>
                             </div>
                           </td>
-                          <td className="size-px whitespace-nowrap ps-4">
+                          <td className="size-px whitespace-nowrap ps-4 max-w-lg">
                             <div className="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
                               <div className="flex items-center gap-x-3">
-                                <img className="inline-block size-[38px] rounded-full" src={client.favicon} alt="Avatar"/>
+                              <img
+                                className="inline-block size-[38px] rounded-full"
+                                src={client.favicon}
+                                alt="Avatar"
+                              />
                                 <div className="grow">
                                   <span className="block text-sm font-semibold text-gray-800">{client.name}</span>
                                 </div>
                               </div>
                             </div>
                           </td>
-                          <td className="size-px whitespace-nowrap">
-                            <div className="px-6 py-3">
+                          <td className="size-px whitespace-nowrap max-w-sm overflow-hidden">
+                            <div className="px-6 py-3 truncate">
                               <ClipboardButton text={`appt.chau.link/${client.slug}?company_id=${client.id}`} />
                             </div>
                           </td>
