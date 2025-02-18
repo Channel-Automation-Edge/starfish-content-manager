@@ -56,8 +56,8 @@ function App() {
     }
     , [clients, bookings, services]);
 
-    console.log('Supabase URL:', process.env.REACT_APP_SUPABASE_URL);
-    console.log('Supabase Key:', process.env.REACT_APP_SUPABASE_KEY);
+    console.log('Supabase password:', import.meta.env.VITE_ADMIN_PASSWORD);
+    console.log('Supabase username:', import.meta.env.USERNAME);
   
   if (isAuthLoading || isDataLoading) {
     return <div>Loading...</div>;
