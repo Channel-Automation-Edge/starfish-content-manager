@@ -57,7 +57,7 @@ function App() {
     , [clients, bookings, services]);
 
     console.log('Supabase password:', import.meta.env.VITE_ADMIN_PASSWORD);
-    console.log('Supabase username:', import.meta.env.USERNAME);
+    console.log('Supabase username:', import.meta.env.VITE_ADMIN_USERNAME);
   
   if (isAuthLoading || isDataLoading) {
     return <div>Loading...</div>;
