@@ -55,6 +55,9 @@ function App() {
       console.log('Services:', services);
     }
     , [clients, bookings, services]);
+
+    console.log('Supabase URL:', process.env.REACT_APP_SUPABASE_URL);
+    console.log('Supabase Key:', process.env.REACT_APP_SUPABASE_KEY);
   
   if (isAuthLoading || isDataLoading) {
     return <div>Loading...</div>;
