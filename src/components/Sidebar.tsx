@@ -87,7 +87,7 @@ const Sidebar: React.FC = () => {
                 </NavLink>
               </li>
 
-              {/* <li>
+              <li>
                 <NavLink
                   to="/bookings"
                   className={({ isActive }) =>
@@ -113,7 +113,7 @@ const Sidebar: React.FC = () => {
                   </svg>
                   Bookings
                 </NavLink>
-              </li> */}
+              </li>
 
               <li>
                 <button
