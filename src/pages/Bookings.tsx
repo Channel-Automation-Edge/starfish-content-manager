@@ -82,23 +82,7 @@ const Bookings = () => {
                         <th scope="col" className="px-6 py-3 text-start">
                           <div className="flex items-center gap-x-2">
                             <span className="text-xs font-semibold uppercase tracking-wide text-gray-800">
-                              Form ID
-                            </span>
-                          </div>
-                        </th>
-
-                        <th scope="col" className="px-6 py-3 text-start">
-                          <div className="flex items-center gap-x-2">
-                            <span className="text-xs font-semibold uppercase tracking-wide text-gray-800">
-                              Name
-                            </span>
-                          </div>
-                        </th>
-
-                        <th scope="col" className="px-6 py-3 text-start">
-                          <div className="flex items-center gap-x-2">
-                            <span className="text-xs font-semibold uppercase tracking-wide text-gray-800">
-                              Phone
+                              User
                             </span>
                           </div>
                         </th>
@@ -115,6 +99,14 @@ const Bookings = () => {
                           <div className="flex items-center gap-x-2">
                             <span className="text-xs font-semibold uppercase tracking-wide text-gray-800">
                               Schedule
+                            </span>
+                          </div>
+                        </th>
+
+                        <th scope="col" className="px-6 py-3 text-start">
+                          <div className="flex items-center gap-x-2">
+                            <span className="text-xs font-semibold uppercase tracking-wide text-gray-800">
+                              Form ID
                             </span>
                           </div>
                         </th>
@@ -146,7 +138,7 @@ const Bookings = () => {
                                 </label>
                               </div>
                             </td>
-                            <td className="size-px whitespace-wrap ps-4 max-w-lg">
+                            <td className="size-px whitespace-wrap ps-4 min-w-52">
                               <div className="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
                                 <div className="flex items-center gap-x-3">
                                   <img
@@ -162,11 +154,6 @@ const Bookings = () => {
                                 </div>
                               </div>
                             </td>
-                            <td className="size-px whitespace-nowrap max-w-sm overflow-hidden">
-                              <div className="px-6 py-3 truncate">
-                                <ClipboardButton text={booking.id} />
-                              </div>
-                            </td>
                             <td className="size-px whitespace-nowrap">
                               <div className="px-6 py-3">
                                 <span className="block text-sm font-semibold text-gray-800">
@@ -175,12 +162,8 @@ const Bookings = () => {
                                 <span className="block text-sm text-gray-500">
                                   {booking.email}
                                 </span>
-                              </div>
-                            </td>
-                            <td className="size-px whitespace-nowrap">
-                              <div className="px-6 py-3">
-                                <span className="text-sm text-gray-800">
-                                  {booking.phone}
+                                <span className="block text-sm text-gray-500">
+                                  +1{booking.phone}
                                 </span>
                               </div>
                             </td>
@@ -190,14 +173,14 @@ const Bookings = () => {
                                   {booking.service_name}
                                 </span>
                                 <span className="block text-sm text-gray-500">
-                                  {booking.specification}
+                                  {booking.service_specification}
                                 </span>
                               </div>
                             </td>
                             <td className="size-px whitespace-nowrap">
                               <div className="px-6 py-3">
                                 <span className="block text-sm font-semibold text-gray-800">
-                                  {booking.date} at {booking.time}
+                                  {booking.date} {booking.time}
                                 </span>
                                 {booking.timezone && (
                                   <span className="block text-sm text-gray-500">
@@ -206,14 +189,19 @@ const Bookings = () => {
                                 )}
                               </div>
                             </td>
-                            <td className="size-px whitespace-nowrap">
+                            <td className="size-px whitespace-wrap max-w-52">
+                              <div className="px-6 py-3">
+                                <ClipboardButton text={booking.id} />
+                              </div>
+                            </td>
+                            <td className="size-px whitespace-wrap min-w-36">
                               <div className="px-6 py-3">
                                 <span className="text-sm text-gray-800">
                                   {formatCreatedAt(booking.created_at)}
                                 </span>
                               </div>
                             </td>
-                            <td className="size-px whitespace-nowrap">
+                            <td className="size-px whitespace-nowrap ">
                               <div className="px-6 py-1.5">
                                 <button
                                   className="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-none focus:underline font-medium"

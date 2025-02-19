@@ -35,7 +35,7 @@ const ClipboardButton: React.FC<ClipboardButtonProps> = ({ text }) => {
   }, []);
 
   return (
-    <div className="px-6 py-3">
+    <div className="py-3">
       <div className="inline-flex items-center gap-x-3">
         
 

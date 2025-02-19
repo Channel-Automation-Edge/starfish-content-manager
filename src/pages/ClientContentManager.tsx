@@ -149,7 +149,7 @@ const ClientContentManager = () => {
                               </label>
                             </div>
                           </td>
-                          <td className="size-px whitespace-nowrap ps-4 max-w-lg">
+                          <td className="size-px whitespace-wrap ps-4 w-52">
                             <div className="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
                               <div className="flex items-center gap-x-3">
                               <img
@@ -163,8 +163,8 @@ const ClientContentManager = () => {
                               </div>
                             </div>
                           </td>
-                          <td className="size-px whitespace-nowrap max-w-sm overflow-hidden">
-                            <div className="px-6 py-3 truncate">
+                          <td className="size-px whitespace-wrap max-w-sm">
+                            <div className="px-6 py-3">
                               <ClipboardButton text={`quote.chau.link/${client.slug}?company_id=${client.id}`} />
                             </div>
                           </td>
@@ -179,7 +179,7 @@ const ClientContentManager = () => {
                               </span>
                             </div>
                           </td>
-                          <td className="size-px whitespace-nowrap">
+                          <td className="size-px whitespace-wrap w-36">
                             <div className="px-6 py-3">
                               <span className="text-sm text-gray-800">
                                 {formatUpdatedAt(client.updated_at)}
