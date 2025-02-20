@@ -39,8 +39,22 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
     slug: '',
     favicon: '',
     logo: '',
+    b_roll: '',
+    bg_photo: '',
+    hero_h1: '',
+    hero_lede: '',
+    hero_cta: '',
+    feature_header: '',
+    feature_description: '',
+    feature_list: [],
+    feature_photo: '',
+    accent: '#FA5100',
+    accentLight: '#fff1eb',
+    accentDark: '#d84a05',
+    accentDarker: '#ab3c06',
+    accentRGBA: 'rgba(250, 81, 0, 1)',
   };
-
+  
 // Fetch client data and selected services if in edit mode
   useEffect(() => {
     if (mode === 'edit' && id) {
@@ -54,6 +68,20 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
           slug: client.slug,
           favicon: client.favicon,
           logo: client.content?.logo || '',
+          b_roll: client.content?.b_roll || '',
+          bg_photo: client.content?.bg_photo || '',
+          hero_h1: client.content?.hero_h1 || '',
+          hero_lede: client.content?.hero_lede || '',
+          hero_cta: client.content?.hero_cta || '',
+          feature_header: client.content?.feature_header || '',
+          feature_description: client.content?.feature_description || '',
+          feature_list: client.content?.feature_list || [],
+          feature_photo: client.content?.feature_photo || '',
+          accent: client.colors?.accent || '#FA5100',
+          accentLight: client.colors?.light || '#fff1eb',
+          accentDark: client.colors?.dark || '#d84a05',
+          accentDarker: client.colors?.darker || '#ab3c06',
+          accentRGBA: client.colors?.accent_rgba || 'rgba(250, 81, 0, 1)',
         });
 
         if (client.testimonials) setTestimonials(client.testimonials);
@@ -100,9 +128,9 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
     );
   };
 
-  // Formik form handling
 
-     // Generic item handlers
+
+  // Generic item handlers
   const handleSaveItem = (item: any) => {
     if (editingType === 'testimonial') {
       const avatars = [
@@ -151,6 +179,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
     initialValues,
     validationSchema,
     onSubmit: async (values) => {
+      console.log('Submitting form with values:', values);
       try {
         const clientData = {
           name: values.companyName,
@@ -159,10 +188,28 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
           websiteLink: values.websiteLink,
           slug: values.slug,
           favicon: values.favicon,
-          content: { logo: values.logo },
+          content: { 
+            logo: values.logo,
+            b_roll: values.b_roll,
+            bg_photo: values.bg_photo,
+            hero_h1: values.hero_h1,
+            hero_lede: values.hero_lede,
+            hero_cta: values.hero_cta,
+            feature_header: values.feature_header,
+            feature_description: values.feature_description,
+            feature_list: values.feature_list,
+            feature_photo: values.feature_photo,
+          },
           testimonials,
           faqs,
           updated_at: new Date().toISOString(),
+          colors: {
+            accent: formik.values.accent,
+            light: formik.values.accentLight,
+            dark: formik.values.accentDark,
+            darker: formik.values.accentDarker,
+            accent_rgba: formik.values.accentRGBA,
+          },
         };
 
         if (mode === 'edit' && id) {
@@ -239,6 +286,49 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
   const handleCancel = () => {
     navigate('/');
   };
+
+  // hex to rgba converter
+  const hexToRgba = (hex: string, alpha: number = 1): string => {
+    console.log("hex", hex);
+    // Remove # if present
+    hex = hex.replace('#', '');
+    
+    // Parse hex values
+    let r, g, b;
+    if (hex.length === 3) {
+      r = parseInt(hex[0] + hex[0], 16);
+      g = parseInt(hex[1] + hex[1], 16);
+      b = parseInt(hex[2] + hex[2], 16);
+    } else if (hex.length === 6) {
+      r = parseInt(hex.substring(0, 2), 16);
+      g = parseInt(hex.substring(2, 4), 16);
+      b = parseInt(hex.substring(4, 6), 16);
+    } else {
+      return 'rgba(0, 0, 0, 1)';
+    }
+  
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
+  // update accentRGBA when accent changes
+  useEffect(() => {
+    console.log("updating accent");
+    const rgba = hexToRgba(formik.values.accent);
+    formik.setFieldValue('accentRGBA', rgba);
+  }, [formik.values.accent]);
+
+  // Scroll to first error field on submit
+  useEffect(() => {
+    if (Object.keys(formik.errors).length > 0) {
+      const firstErrorField = Object.keys(formik.errors)[0];
+      const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
+
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        (errorElement as HTMLInputElement).focus();
+      }
+    }
+  }, [formik.errors]);
 
   return (
     <div>
@@ -670,7 +760,52 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                     </table>
                   </div>
                 </div> 
-              </div>
+
+
+
+                {/* Color Pickers */}
+                <div className='sm:col-span-12 flex flex-wrap gap-4'>
+                  <div className='flex items-center gap-2'>
+                    <label className="block text-sm font-medium">Accent</label>
+                    <input
+                      type="color"
+                      className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg"
+                      {...formik.getFieldProps('accent')}
+                    />
+                  </div>
+                  <div className='flex items-center gap-2'>
+                    <label className="block text-sm font-medium">Accent Light</label>
+                    <input
+                      type="color"
+                      className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg"
+                      {...formik.getFieldProps('accentLight')}
+                    />
+                  </div>
+                  <div className='flex items-center gap-2'>
+                    <label className="block text-sm font-medium">Accent Dark</label>
+                    <input
+                      type="color"
+                      className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg"
+                      {...formik.getFieldProps('accentDark')}
+                    />
+                  </div>
+                  <div className='flex items-center gap-2'>
+                    <label className="block text-sm font-medium">Accent Darker</label>
+                    <input
+                      type="color"
+                      className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg"
+                      {...formik.getFieldProps('accentDarker')}
+                    />
+                  </div>
+                </div>
+
+
+
+              </div> {/* End of container */}
+              
+            
+
+
               <div className="sticky bottom-0 bg-white py-6 mt-5 flex justify-end gap-x-2">
                 <button
                   type="button"
