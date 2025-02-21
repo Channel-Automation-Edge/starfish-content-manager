@@ -46,7 +46,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
     hero_cta: '',
     feature_header: '',
     feature_description: '',
-    feature_list: [],
+    feature_list: ['Skilled Professionals', 'Excellence Guaranteed', 'No Hidden Costs'] as string[],
     feature_photo: '',
     accent: '#FA5100',
     accentLight: '#fff1eb',
@@ -75,7 +75,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
           hero_cta: client.content?.hero_cta || '',
           feature_header: client.content?.feature_header || '',
           feature_description: client.content?.feature_description || '',
-          feature_list: client.content?.feature_list || [],
+          feature_list: client.content?.feature_list || ['Skilled Professionals', 'Excellence Guaranteed', 'No Hidden Costs'],
           feature_photo: client.content?.feature_photo || '',
           accent: client.colors?.accent || '#FA5100',
           accentLight: client.colors?.light || '#fff1eb',
@@ -317,18 +317,16 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
     formik.setFieldValue('accentRGBA', rgba);
   }, [formik.values.accent]);
 
-  // Scroll to first error field on submit
-  useEffect(() => {
-    if (Object.keys(formik.errors).length > 0) {
-      const firstErrorField = Object.keys(formik.errors)[0];
-      const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
-
-      if (errorElement) {
-        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        (errorElement as HTMLInputElement).focus();
-      }
+  const handleAddFeature = () => {
+    if (formik.values.feature_list.length < 3) {
+      formik.setFieldValue('feature_list', [...formik.values.feature_list, '']);
     }
-  }, [formik.errors]);
+  };
+  
+  const handleRemoveFeature = (index: number) => {
+    const newFeatures = formik.values.feature_list.filter((_, i) => i !== index);
+    formik.setFieldValue('feature_list', newFeatures);
+  };
 
   return (
     <div>
@@ -412,18 +410,18 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
       </Dialog>
       <div className="w-full lg:ps-64">
         <div className="max-w-7xl px-4 py-10 sm:px-6 lg:px-8 mx-auto">
-          <div className="bg-white rounded-xl shadow p-4 sm:p-7">
-            <div className="mb-8">
-              <h2 className="text-xl font-bold text-gray-800">
-                {mode === 'add' ? 'Add New Client' : 'Edit Client'}
-              </h2>
-              <p className="text-sm text-gray-600">
-                {mode === 'add' 
-                  ? 'Fill in the details of the new client.'
-                  : 'Edit the details of the client.'}
-              </p>
-            </div>
-            <form onSubmit={formik.handleSubmit}>
+          <form onSubmit={formik.handleSubmit}>
+            <div className="bg-white rounded-xl shadow p-4 sm:p-7">
+              <div className="mb-8">
+                <h2 className="text-xl font-bold text-gray-800">
+                  {mode === 'add' ? 'Add New Client' : 'Edit Client'}
+                </h2>
+                <p className="text-sm text-gray-600">
+                  {mode === 'add' 
+                    ? 'Fill in the details of the new client.'
+                    : 'Edit the details of the client.'}
+                </p>
+              </div>
               <div className="grid sm:grid-cols-12 gap-2 sm:gap-6">
                 <div className="sm:col-span-3">
                   <label htmlFor="companyName" className="form-label">Company Name</label>
@@ -562,6 +560,47 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                     </div>
                   ))}
                 </div>
+
+                <div className="sm:col-span-3">
+                  <label className="form-label">Colors</label>
+                </div>
+                {/* Color Pickers */}
+                <div className='sm:col-span-9 flex flex-wrap gap-4'>
+                  <div className='flex items-center gap-2'>
+                    <label className="block text-sm font-medium">Accent</label>
+                    <input
+                      type="color"
+                      className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg"
+                      {...formik.getFieldProps('accent')}
+                    />
+                  </div>
+                  <div className='flex items-center gap-2'>
+                    <label className="block text-sm font-medium">Accent Light</label>
+                    <input
+                      type="color"
+                      className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg"
+                      {...formik.getFieldProps('accentLight')}
+                    />
+                  </div>
+                  <div className='flex items-center gap-2'>
+                    <label className="block text-sm font-medium">Accent Dark</label>
+                    <input
+                      type="color"
+                      className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg"
+                      {...formik.getFieldProps('accentDark')}
+                    />
+                  </div>
+                  <div className='flex items-center gap-2'>
+                    <label className="block text-sm font-medium">Accent Darker</label>
+                    <input
+                      type="color"
+                      className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg"
+                      {...formik.getFieldProps('accentDarker')}
+                    />
+                  </div>
+                </div>
+
+
 
                 {/* Testimonials Section */}
                 <div className="sm:col-span-12 mt-2">
@@ -761,42 +800,209 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                   </div>
                 </div> 
 
+              </div>
+            </div>
+            
+            <div className="mt-10 bg-white rounded-xl shadow p-4 sm:p-7"> 
+              <div className="mb-8 sm:col-span-12">
+                <h2 className="text-xl font-bold text-gray-800">
+                  Other Custom Content
+                </h2>
+                <p className="text-sm text-gray-600">
+                  Optional: Customize media and text. If not defined, default content will be used.
+                </p>
+              </div>           
+              <div className="grid sm:grid-cols-12 gap-2 sm:gap-6">            
+                {/* Image for Header */}
+                <div className="sm:col-span-12">
+                  <img src='/header-guide.jpg' alt="header guide" className="w-full border border-gray-200 rounded-xl shadow-sm " />
+                </div>
 
+                <div className="sm:col-span-3">
+                  <label htmlFor="hero_h1" className="form-label">Hero Header</label>
+                </div>
+                <div className="sm:col-span-9">
+                  <input
+                    id="hero_h1"
+                    type="text"
+                    className="form-input"
+                    placeholder="Default: Building Better Spaces for Better Living"
+                    {...formik.getFieldProps('hero_h1')}
+                  />
+                  {formik.touched.hero_h1 && formik.errors.hero_h1 ? (
+                    <div className="text-red-500 text-sm">{formik.errors.hero_h1}</div>
+                  ) : null}
+                </div>
 
-                {/* Color Pickers */}
-                <div className='sm:col-span-12 flex flex-wrap gap-4'>
-                  <div className='flex items-center gap-2'>
-                    <label className="block text-sm font-medium">Accent</label>
-                    <input
-                      type="color"
-                      className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg"
-                      {...formik.getFieldProps('accent')}
-                    />
+                <div className="sm:col-span-3">
+                  <label htmlFor="hero_lede" className="form-label">Hero Lede</label>
+                </div>
+                <div className="sm:col-span-9">
+                  <textarea
+                    id="hero_lede"
+                    className="form-input"
+                    placeholder="Default: Hi there, receive a customized assessment of your home’s specific needs and expert recommendations tailored just for you by our experienced team"
+                    rows={3}
+                    {...formik.getFieldProps('hero_lede')}
+                  />
+                  {formik.touched.hero_lede && formik.errors.hero_lede ? (
+                    <div className="text-red-500 text-sm">{formik.errors.hero_lede}</div>
+                  ) : null}
+                </div>
+
+                <div className="sm:col-span-3">
+                  <label htmlFor="hero_cta" className="form-label">Hero CTA</label>
+                </div>
+                <div className="sm:col-span-9">
+                  <input
+                    id="hero_cta"
+                    type="text"
+                    className="form-input"
+                    placeholder="Default: Get Free Assessment"
+                    {...formik.getFieldProps('hero_cta')}
+                  />
+                  {formik.touched.hero_cta && formik.errors.hero_cta ? (
+                    <div className="text-red-500 text-sm">{formik.errors.hero_cta}</div>
+                  ) : null}
+                </div>
+
+                <div className="sm:col-span-3">
+                  <label htmlFor="b-roll" className="form-label">B-Roll Video</label>
+                </div>
+                <div className="sm:col-span-9">
+                  <input
+                    id="b-roll"
+                    type="text"
+                    className="form-input"
+                    placeholder=""
+                    {...formik.getFieldProps('b_roll')}
+                  />
+                  {formik.touched.b_roll && formik.errors.b_roll ? (
+                    <div className="text-red-500 text-sm">{formik.errors.b_roll}</div>
+                  ) : null}
+                </div>
+
+                <div className="sm:col-span-3">
+                  <label htmlFor="bg_photo" className="form-label">Background Photo</label>
+                </div>
+                <div className="sm:col-span-9">
+                  <input
+                    id="bg_photo"
+                    type="text"
+                    className="form-input"
+                    placeholder="Optional: Will be used if b-roll is not provided"
+                    {...formik.getFieldProps('bg_photo')}
+                  />
+                  {formik.touched.bg_photo && formik.errors.bg_photo ? (
+                    <div className="text-red-500 text-sm">{formik.errors.bg_photo}</div>
+                  ) : null}
+                </div>
+
+                {/* Image for Feature */}
+                <div className="sm:col-span-12">
+                  <img src='/feature-guide.jpg' alt="feature guide" className="w-full border border-gray-200 rounded-xl shadow-sm " />
+                </div>
+
+                <div className="sm:col-span-3">
+                  <label htmlFor="feature_photo" className="form-label">Feature Photo</label>
+                </div>
+                <div className="sm:col-span-9">
+                  <input
+                    id="feature_photo"
+                    type="text"
+                    className="form-input"
+                    placeholder="Deafult: photo above"
+                    {...formik.getFieldProps('feature_photo')}
+                  />
+                  {formik.touched.feature_photo && formik.errors.feature_photo ? (
+                    <div className="text-red-500 text-sm">{formik.errors.feature_photo}</div>
+                  ) : null}
+                </div>
+
+                <div className="sm:col-span-3">
+                  <label htmlFor="feature_header" className="form-label">Feature Header</label>
+                </div>
+                <div className="sm:col-span-9">
+                  <input
+                    id="feature_header"
+                    type="text"
+                    className="form-input"
+                    placeholder="Default: Your Dream Home, Our Expertise"
+                    {...formik.getFieldProps('feature_header')}
+                  />
+                  {formik.touched.feature_header && formik.errors.feature_header ? (
+                    <div className="text-red-500 text-sm">{formik.errors.feature_header}</div>
+                  ) : null}
+                </div>
+
+                <div className="sm:col-span-3">
+                  <label htmlFor="feature_description" className="form-label">Feature Description</label>
+                </div>
+                <div className="sm:col-span-9">
+                  <textarea
+                    id="feature_description"
+                    className="form-input"
+                    placeholder="Default: At {company name}, we specialize in turning your house into a home. Our team of experienced professionals is dedicated to providing top-notch home improvement services tailored to your needs"
+                    rows={3}
+                    {...formik.getFieldProps('feature_description')}
+                  />
+                  {formik.touched.feature_description && formik.errors.feature_description ? (
+                    <div className="text-red-500 text-sm">{formik.errors.feature_description}</div>
+                  ) : null}
+                </div>
+
+                <div className="sm:col-span-3">
+                  <label htmlFor="feature_list" className="form-label">Feature List</label>
+                </div>
+                <div className="sm:col-span-9">
+                  <div className="space-y-3" id="feature-list-wrapper">
+                    {formik.values.feature_list.map((feature, index) => (
+                      <div key={index} className="relative">
+                        <input
+                          type="text"
+                          className="py-3 ps-4 pe-8 block w-full border-gray-200 rounded-lg text-sm border focus:border-blue-500 focus:ring-blue-500"
+                          placeholder="Enter feature"
+                          value={feature}
+                          onChange={(e) => {
+                            const newFeatures = [...formik.values.feature_list];
+                            newFeatures[index] = e.target.value;
+                            formik.setFieldValue('feature_list', newFeatures);
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFeature(index)}
+                          className="inline-flex absolute top-[15px] end-[10px] text-red-400 cursor-pointer"
+                        >
+                          <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="m15 9-6 6" />
+                            <path d="m9 9 6 6" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                  <div className='flex items-center gap-2'>
-                    <label className="block text-sm font-medium">Accent Light</label>
-                    <input
-                      type="color"
-                      className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg"
-                      {...formik.getFieldProps('accentLight')}
-                    />
-                  </div>
-                  <div className='flex items-center gap-2'>
-                    <label className="block text-sm font-medium">Accent Dark</label>
-                    <input
-                      type="color"
-                      className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg"
-                      {...formik.getFieldProps('accentDark')}
-                    />
-                  </div>
-                  <div className='flex items-center gap-2'>
-                    <label className="block text-sm font-medium">Accent Darker</label>
-                    <input
-                      type="color"
-                      className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg"
-                      {...formik.getFieldProps('accentDarker')}
-                    />
-                  </div>
+                  
+                  {formik.values.feature_list.length < 5 && (
+                    <div className="mt-3 text-end">
+                      <button
+                        type="button"
+                        onClick={handleAddFeature}
+                        className="py-1.5 px-2 inline-flex items-center gap-x-1 text-xs font-medium rounded-full border border-dashed border-gray-200 bg-white text-gray-800 hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
+                      >
+                        <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M5 12h14" />
+                          <path d="M12 5v14" />
+                        </svg>
+                        Add Feature
+                      </button>
+                    </div>
+                  )}
+                  
+                  {formik.touched.feature_list && formik.errors.feature_list ? (
+                    <div className="text-red-500 text-sm mt-1">{formik.errors.feature_list}</div>
+                  ) : null}
                 </div>
 
 
@@ -821,8 +1027,8 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                   Save changes
                 </button>
               </div>
-            </form>
-          </div>
+            </div>
+          </form>
         </div>
       </div>
     </div>
