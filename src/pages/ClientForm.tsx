@@ -19,6 +19,8 @@ interface ClientFormProps {
   mode: 'add' | 'edit';
 }
 
+type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+
 const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
@@ -29,6 +31,8 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
   const [editingType, setEditingType] = useState<'testimonial' | 'faq'>('testimonial');
   const [currentItem, setCurrentItem] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<DayOfWeek>('Monday');
+  const days: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   // Initialize form values
   const initialValues = {
@@ -53,6 +57,15 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
     accentDark: '#d84a05',
     accentDarker: '#ab3c06',
     accentRGBA: 'rgba(250, 81, 0, 1)',
+    time_slots: {
+      Monday: [] as string[],
+      Tuesday: [] as string[],
+      Wednesday: [] as string[],
+      Thursday: [] as string[],
+      Friday: [] as string[],
+      Saturday: [] as string[],
+      Sunday: [] as string[],
+    },
   };
   
 // Fetch client data and selected services if in edit mode
@@ -82,6 +95,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
           accentDark: client.colors?.dark || '#d84a05',
           accentDarker: client.colors?.darker || '#ab3c06',
           accentRGBA: client.colors?.accent_rgba || 'rgba(250, 81, 0, 1)',
+          time_slots: client.time_slots || initialValues.time_slots,
         });
 
         if (client.testimonials) setTestimonials(client.testimonials);
@@ -210,6 +224,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
             darker: formik.values.accentDarker,
             accent_rgba: formik.values.accentRGBA,
           },
+          time_slots: values.time_slots,
         };
 
         if (mode === 'edit' && id) {
@@ -328,6 +343,33 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
     formik.setFieldValue('feature_list', newFeatures);
   };
 
+  const handleAddTimeSlot = () => {
+    const currentSlots = formik.values.time_slots[selectedDay];
+    formik.setFieldValue(`time_slots.${selectedDay}`, [...currentSlots, '']);
+  };
+  
+  const handleRemoveTimeSlot = (index: number) => {
+    const currentSlots = formik.values.time_slots[selectedDay].filter((_, i) => i !== index);
+    formik.setFieldValue(`time_slots.${selectedDay}`, currentSlots);
+  };
+  
+  const handleApplyToAllDays = () => {
+    const currentSlots = [...formik.values.time_slots[selectedDay]];
+    const newTimeSlots = { ...formik.values.time_slots };
+  
+    (Object.keys(newTimeSlots) as DayOfWeek[]).forEach((day) => {
+      newTimeSlots[day] = [...currentSlots];
+    });
+  
+    formik.setFieldValue('time_slots', newTimeSlots);
+  };
+  
+  const handleTimeSlotChange = (index: number, value: string) => {
+    const newSlots = [...formik.values.time_slots[selectedDay]];
+    newSlots[index] = value;
+    formik.setFieldValue(`time_slots.${selectedDay}`, newSlots);
+  };
+
   return (
     <div>
       <Dialog>
@@ -409,8 +451,8 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
         </DialogContent>
       </Dialog>
       <div className="w-full lg:ps-64">
-        <div className="max-w-7xl px-4 py-10 sm:px-6 lg:px-8 mx-auto">
-          <form onSubmit={formik.handleSubmit}>
+        <form onSubmit={formik.handleSubmit}>
+          <div className="max-w-7xl px-4 py-10 sm:px-6 lg:px-8 mx-auto">
             <div className="bg-white rounded-xl shadow p-4 sm:p-7">
               <div className="mb-8">
                 <h2 className="text-xl font-bold text-gray-800">
@@ -597,6 +639,88 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                       className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg"
                       {...formik.getFieldProps('accentDarker')}
                     />
+                  </div>
+                </div>
+
+                {/* Time Slots */}
+                <div className="sm:col-span-12 mt-2">
+                  <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 grid gap-3 md:flex md:justify-between md:items-center border-b border-gray-200">
+                      <div>
+                        <h2 className="text-base font-semibold text-gray-700">Time Slots</h2>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap px-6 py-4">
+                      <div className="border-e border-gray-200">
+                        <nav className="flex flex-col space-y-2" aria-label="Tabs" role="tablist">
+                        {days.map((day: DayOfWeek) => (
+                          <button
+                            key={day}
+                            type="button"
+                            onClick={() => setSelectedDay(day)}
+                            className={`py-1 pe-4 inline-flex items-center gap-x-2 border-e-2 text-sm whitespace-nowrap focus:outline-none ${
+                              selectedDay === day 
+                                ? 'border-blue-500 text-blue-600' 
+                                : 'border-transparent text-gray-500 hover:text-blue-600'
+                            }`}
+                          >
+                            {day}
+                          </button>
+                        ))}
+                        </nav>
+                      </div>
+
+                      <div className="ms-3 flex-1">
+                        <div className="space-y-3">
+                          <div className="flex flex-wrap gap-2">
+                          {formik.values.time_slots[selectedDay].map((slot, index) => (
+                            <div key={index} className="relative flex items-center gap-4 border border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 ps-3 pe-2">
+                              <input
+                                type="time"
+                                className="py-2  block text-sm"
+                                value={slot}
+                                onChange={(e) => handleTimeSlotChange(index, e.target.value)}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveTimeSlot(index)}
+                                className="text-red-400 cursor-pointer"
+                              >
+                                <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <circle cx="12" cy="12" r="10" />
+                                  <path d="m15 9-6 6" />
+                                  <path d="m9 9 6 6" />
+                                </svg>
+                              </button>
+                            </div>
+                          ))}
+                          </div>
+                          
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={handleAddTimeSlot}
+                              className="py-1.5 px-2 inline-flex items-center gap-x-1 text-xs font-medium rounded-full border border-dashed border-gray-200 bg-white text-gray-800 hover:bg-gray-50"
+                            >
+                              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M5 12h14" />
+                                <path d="M12 5v14" />
+                              </svg>
+                              Add Time Slot
+                            </button>
+                            
+                            <button
+                              type="button"
+                              onClick={handleApplyToAllDays}
+                              className="py-1.5 px-2 inline-flex items-center gap-x-1 text-xs font-medium rounded-full border border-dashed border-gray-200 bg-white text-gray-800 hover:bg-gray-50"
+                            >
+                              Apply For All Days
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -803,7 +927,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
               </div>
             </div>
             
-            <div className="mt-10 bg-white rounded-xl shadow p-4 sm:p-7"> 
+            <div className="mt-10 bg-white rounded-t-xl shadow p-4 sm:p-7"> 
               <div className="mb-8 sm:col-span-12">
                 <h2 className="text-xl font-bold text-gray-800">
                   Other Custom Content
@@ -1010,26 +1134,26 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
               </div> {/* End of container */}
               
             
-
-
-              <div className="sticky bottom-0 bg-white py-6 mt-5 flex justify-end gap-x-2">
-                <button
-                  type="button"
-                  className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus:bg-gray-50"
-                  onClick={handleCancel}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-                >
-                  Save changes
-                </button>
-              </div>
             </div>
-          </form>
-        </div>
+
+            <div className="sticky bottom-0 rounded-b-xl shadow p-4 sm:p-7 border-t border-gray-200 bg-white py-6 flex justify-end gap-x-2">
+              <button
+                type="button"
+                className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus:bg-gray-50"
+                onClick={handleCancel}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+              >
+                Save changes
+              </button>
+            </div>
+          
+          </div>
+        </form>
       </div>
     </div>
   );

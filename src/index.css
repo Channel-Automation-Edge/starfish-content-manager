@@ -9,3 +9,8 @@
 .form-label {
     @apply inline-block text-sm text-gray-800 mt-2.5;
 }
+
+input[type="time"]::-webkit-calendar-picker-indicator {
+    display: none;
+
+}
