@@ -153,7 +153,7 @@ const ClientContentManager = () => {
                             <div className="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
                               <div className="flex items-center gap-x-3">
                               <img
-                                className="inline-block size-[38px] rounded-full"
+                                className="inline-block size-[38px] border border-gray-200 rounded-full"
                                 src={client.favicon}
                                 alt="Avatar"
                               />
