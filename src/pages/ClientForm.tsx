@@ -318,7 +318,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
   }, [formik.values.accent]);
 
   const handleAddFeature = () => {
-    if (formik.values.feature_list.length < 3) {
+    if (formik.values.feature_list.length < 10) {
       formik.setFieldValue('feature_list', [...formik.values.feature_list, '']);
     }
   };
@@ -984,7 +984,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                     ))}
                   </div>
                   
-                  {formik.values.feature_list.length < 5 && (
+                  {formik.values.feature_list.length < 10 && (
                     <div className="mt-3 text-end">
                       <button
                         type="button"
