@@ -66,6 +66,11 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
       Saturday: [] as string[],
       Sunday: [] as string[],
     },
+    from: 3,
+    after: 14,
+    holidays: [] as string[],
+    timezone: '',
+    privacy_policy_link: '',
   };
   
 // Fetch client data and selected services if in edit mode
@@ -96,6 +101,11 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
           accentDarker: client.colors?.darker || '#ab3c06',
           accentRGBA: client.colors?.accent_rgba || 'rgba(250, 81, 0, 1)',
           time_slots: client.time_slots || initialValues.time_slots,
+          from: client.disabled_dates?.from || 3,
+          after: client.disabled_dates?.after || 14,
+          holidays: client.disabled_dates?.holidays || [],
+          timezone: client.timezone || 'America/New_York',
+          privacy_policy_link: client.privacy_policy_link || '',
         });
 
         if (client.testimonials) setTestimonials(client.testimonials);
@@ -127,10 +137,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
   const validationSchema = Yup.object({
     companyName: Yup.string().required('Company name is required'),
     companyId: Yup.string().required('Company ID is required'),
-    websiteLink: Yup.string().required('Website link is required'),
     slug: Yup.string().required('Slug is required'),
-    favicon: Yup.string().required('Favicon is required'),
-    logo: Yup.string().required('Logo is required'),
   });
 
   // Handle service selection
@@ -225,6 +232,13 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
             accent_rgba: formik.values.accentRGBA,
           },
           time_slots: values.time_slots,
+          disabled_dates: {
+            from: values.from,
+            after: values.after,
+            holidays: values.holidays.map((date) => convertToISO8601(date)), // Convert to ISO 8601
+          },
+          timezone: values.timezone,
+          privacy_policy_link: values.privacy_policy_link,  
         };
 
         if (mode === 'edit' && id) {
@@ -370,6 +384,27 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
     formik.setFieldValue(`time_slots.${selectedDay}`, newSlots);
   };
 
+  const handleAddHoliday = () => {
+    if (formik.values.holidays.length < 10) {
+      formik.setFieldValue('holidays', [...formik.values.holidays, '']);
+    }
+  };
+  
+  const handleRemoveHoliday = (index: number) => {
+    const newHolidays = formik.values.holidays.filter((_, i) => i !== index);
+    formik.setFieldValue('holidays', newHolidays);
+  };
+
+  const convertToISO8601 = (dateString: string): string => {
+    // Append a time (e.g., midnight) and a timezone offset (e.g., UTC)
+    return `${dateString}T00:00:00Z`; // Example: "2025-03-05T00:00:00Z"
+  };
+
+  const parseDateWithoutTimezone = (dateString: string): string => {
+    // Extract the date part (YYYY-MM-DD) from the ISO 8601 string
+    return dateString.split('T')[0];
+  };
+
   return (
     <div>
       <Dialog>
@@ -498,22 +533,19 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label htmlFor="phone" className="form-label">Phone</label>
+                  <label htmlFor="timezone" className="form-label">Timezone</label>
                 </div>
                 <div className="sm:col-span-9">
-                  <div className='flex items-start'>
-                    <input
-                      id="phone"
-                      type="text"
-                      className="form-input rounded-l-sm"
-                      placeholder="+19999999999"
-                      {...formik.getFieldProps('phone')}
-                    />
-                  </div>
-                  {formik.touched.phone && formik.errors.phone ? (
-                      <div className="text-red-500 text-sm">{formik.errors.phone}</div>
-                    ) : null}
-                  
+                  <input
+                    id="timezone"
+                    type="text"
+                    className="form-input"
+                    placeholder="America/New_York"
+                    {...formik.getFieldProps('timezone')}
+                  />
+                  {formik.touched.timezone && formik.errors.timezone ? (
+                    <div className="text-red-500 text-sm">{formik.errors.timezone}</div>
+                  ) : null}
                 </div>
 
                 <div className="sm:col-span-3">
@@ -529,6 +561,22 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                   />
                   {formik.touched.websiteLink && formik.errors.websiteLink ? (
                     <div className="text-red-500 text-sm">{formik.errors.websiteLink}</div>
+                  ) : null}
+                </div>
+
+                <div className="sm:col-span-3">
+                  <label htmlFor="privacy_policy_link" className="form-label">Privacy Policy / Terms & Conditions Link</label>
+                </div>
+                <div className="sm:col-span-9">
+                  <input
+                    id="privacy_policy_link"
+                    type="text"
+                    className="form-input"
+                    placeholder="https://www.sample.com/privacy-policy"
+                    {...formik.getFieldProps('privacy_policy_link')}
+                  />
+                  {formik.touched.privacy_policy_link && formik.errors.privacy_policy_link ? (
+                    <div className="text-red-500 text-sm">{formik.errors.privacy_policy_link}</div>
                   ) : null}
                 </div>
 
@@ -649,6 +697,9 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                       <div>
                         <h2 className="text-base font-semibold text-gray-700">Time Slots</h2>
                       </div>
+                      <div>
+                        <p>{formik.values.timezone}</p>
+                      </div>
                     </div>
 
                     <div className="flex flex-wrap px-6 py-4">
@@ -723,6 +774,100 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                     </div>
                   </div>
                 </div>
+
+                <div className="sm:col-span-12 mt-2">
+                  <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 grid gap-3 md:flex md:justify-between md:items-center border-b border-gray-200">
+                      <div>
+                        <h2 className="text-base font-semibold text-gray-700">Calendar Configurations</h2>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap px-6 py-4">
+                      <div className="sm:col-span-3">
+                        <label className="form-label mr-2">Disabled Days from Current Date </label>
+                      </div>
+                      <div className="sm:col-span-9 mb-2">
+                        <input
+                          type="number"
+                          className="form-input"
+                          {...formik.getFieldProps('from')}
+                        />
+                      </div>
+
+                      <div className="sm:col-span-3">
+                        <label className="form-label mr-2">Set How Many Days Ahead Users Can Book </label>
+                      </div>
+                      <div className="sm:col-span-9 mb-2">
+                        <input
+                          type="number"
+                          className="form-input"
+                          {...formik.getFieldProps('after')}
+                        />
+                      </div>
+
+                      <div className="sm:col-span-3 ">
+                        <label className="form-label">Unavailable Dates & Holidays</label>
+                      </div>
+                      <div className="px-6 py-4">
+                        <div className="space-y-3">
+                          <div className="flex flex-wrap gap-2">
+                            {formik.values.holidays.map((holiday, index) => (
+                              <div key={index} className="relative">
+                                <input
+                                  type="date"
+                                  className="py-3 ps-4 pe-8 block w-full border-gray-200 rounded-lg text-sm border focus:border-blue-500 focus:ring-blue-500"
+                                  value={parseDateWithoutTimezone(holiday)} //
+                                  onChange={(e) => {
+                                    const newHolidays = [...formik.values.holidays];
+                                    newHolidays[index] = e.target.value;
+                                    formik.setFieldValue('holidays', newHolidays);
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveHoliday(index)}
+                                  className="inline-flex absolute top-[15px] end-[10px] text-red-400 cursor-pointer"
+                                >
+                                  <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="m15 9-6 6" />
+                                    <path d="m9 9 6 6" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ))}
+
+                            {formik.values.holidays.length < 10 && (
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={handleAddHoliday}
+                                  className="py-1.5 px-2 inline-flex items-center gap-x-1 text-xs font-medium rounded-full border border-dashed border-gray-200 bg-white text-gray-800 hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
+                                >
+                                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M5 12h14" />
+                                    <path d="M12 5v14" />
+                                  </svg>
+                                  Add Day
+                                </button>
+                              </div>
+                            )}
+
+                            
+
+                          </div>
+                        </div>
+                      </div>
+                     
+                    </div>
+                  </div>
+                </div>
+
+
+                
+
+
 
 
 
