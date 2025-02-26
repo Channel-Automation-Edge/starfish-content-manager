@@ -71,6 +71,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
     holidays: [] as string[],
     timezone: '',
     privacy_policy_link: '',
+    terms_conditions_link: '',
   };
   
 // Fetch client data and selected services if in edit mode
@@ -106,6 +107,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
           holidays: client.disabled_dates?.holidays || [],
           timezone: client.timezone || 'America/New_York',
           privacy_policy_link: client.privacy_policy_link || '',
+          terms_conditions_link: client.terms_conditions_link || '',
         });
 
         if (client.testimonials) setTestimonials(client.testimonials);
@@ -239,6 +241,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
           },
           timezone: values.timezone,
           privacy_policy_link: values.privacy_policy_link,  
+          terms_conditions_link: values.terms_conditions_link,
         };
 
         if (mode === 'edit' && id) {
@@ -565,7 +568,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label htmlFor="privacy_policy_link" className="form-label">Privacy Policy / Terms & Conditions Link</label>
+                  <label htmlFor="privacy_policy_link" className="form-label">Privacy Policy Link</label>
                 </div>
                 <div className="sm:col-span-9">
                   <input
@@ -577,6 +580,22 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                   />
                   {formik.touched.privacy_policy_link && formik.errors.privacy_policy_link ? (
                     <div className="text-red-500 text-sm">{formik.errors.privacy_policy_link}</div>
+                  ) : null}
+                </div>
+
+                <div className="sm:col-span-3">
+                  <label htmlFor="terms_conditions_link" className="form-label">Terms & Conditions Link</label>
+                </div>
+                <div className="sm:col-span-9">
+                  <input
+                    id="terms_conditions_link"
+                    type="text"
+                    className="form-input"
+                    placeholder="Optional, if available only"
+                    {...formik.getFieldProps('terms_conditions_link')}
+                  />
+                  {formik.touched.terms_conditions_link && formik.errors.terms_conditions_link ? (
+                    <div className="text-red-500 text-sm">{formik.errors.terms_conditions_link}</div>
                   ) : null}
                 </div>
 
