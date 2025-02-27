@@ -269,7 +269,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
             if (!existingServiceIds.includes(serviceId)) {
               const { error: insertError } = await supabase
                 .from('contractor_services')
-                .insert([{ contractor_id: id, service_id: serviceId }]);
+                .insert([{ contractor_id: id, service_id: serviceId, specifications: '{"Repair", "Remodel"}' }]);
 
               if (insertError) throw insertError;
             }
@@ -300,7 +300,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
           for (const serviceId of selectedServices) {
             const { error: insertError } = await supabase
               .from('contractor_services')
-              .insert([{ contractor_id: values.companyId, service_id: serviceId }]);
+              .insert([{ contractor_id: values.companyId, service_id: serviceId, specifications: '{"Repair", "Remodel"}' }]);
 
             if (insertError) throw insertError;
           }

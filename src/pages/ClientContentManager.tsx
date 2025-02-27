@@ -17,7 +17,9 @@ const ClientContentManager = () => {
       client.colors &&
       client.slug &&
       client.content?.logo &&
-      client.favicon
+      client.favicon &&
+      client.timezone &&
+      client.privacy_policy_link
     );
   };
 
