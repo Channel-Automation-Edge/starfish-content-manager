@@ -12,8 +12,8 @@ const ClientContentManager = () => {
       client.id &&
       client.name &&
       client.time_slots &&
-      client.testimonials &&
-      client.faqs &&
+      client.testimonials.length > 0 &&
+      client.faqs.length > 0 &&
       client.colors &&
       client.slug &&
       client.content?.logo &&

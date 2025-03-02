@@ -69,7 +69,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
     from: 3,
     after: 14,
     holidays: [] as string[],
-    timezone: '',
+    timezone: [] as string[],
     privacy_policy_link: '',
     terms_conditions_link: '',
   };
@@ -105,7 +105,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
           from: client.disabled_dates?.from || 3,
           after: client.disabled_dates?.after || 14,
           holidays: client.disabled_dates?.holidays || [],
-          timezone: client.timezone || 'America/New_York',
+          timezone: client.timezone || ["America/New_York"],
           privacy_policy_link: client.privacy_policy_link || '',
           terms_conditions_link: client.terms_conditions_link || '',
         });
@@ -408,6 +408,19 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
     return dateString.split('T')[0];
   };
 
+  const handleAddTimezone = () => {
+    if (formik.values.timezone.length < 10) {
+      formik.setFieldValue('timezone', [...formik.values.timezone, '']);
+    }
+  };
+
+  const handleRemoveTimezone = (index: number) => {
+    const newTimezones = formik.values.timezone.filter((_, i) => i !== index);
+    formik.setFieldValue('timezone', newTimezones);
+  };
+  
+  
+
   return (
     <div>
       <Dialog>
@@ -536,16 +549,48 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label htmlFor="timezone" className="form-label">Timezone</label>
+                  <label htmlFor="timezone" className="form-label">Timezones</label>
                 </div>
                 <div className="sm:col-span-9">
-                  <input
-                    id="timezone"
-                    type="text"
-                    className="form-input"
-                    placeholder="America/New_York"
-                    {...formik.getFieldProps('timezone')}
-                  />
+                  <div className="space-y-3">
+                    {formik.values.timezone.map((tz, index) => (
+                      <div key={index} className="relative flex items-center gap-4 border border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 ps-3 pe-2">
+                        <input
+                          type="text"
+                          className="py-2 block w-full text-sm border-none focus:ring-0"
+                          placeholder="America/New_York"
+                          value={tz}
+                          onChange={(e) => {
+                            const newTimezones = [...formik.values.timezone];
+                            newTimezones[index] = e.target.value;
+                            formik.setFieldValue('timezone', newTimezones);
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveTimezone(index)}
+                          className="text-red-400 cursor-pointer"
+                        >
+                          <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="m15 9-6 6" />
+                            <path d="m9 9 6 6" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={handleAddTimezone}
+                      className="py-1.5 px-2 inline-flex items-center gap-x-1 text-xs font-medium rounded-full border border-dashed border-gray-200 bg-white text-gray-800 hover:bg-gray-50"
+                    >
+                      <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 12h14" />
+                        <path d="M12 5v14" />
+                      </svg>
+                      Add Timezone
+                    </button>
+                  </div>
                   {formik.touched.timezone && formik.errors.timezone ? (
                     <div className="text-red-500 text-sm">{formik.errors.timezone}</div>
                   ) : null}
