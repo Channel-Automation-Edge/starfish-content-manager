@@ -33,6 +33,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>('Monday');
   const days: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const [serviceSpecifications, setServiceSpecifications] = useState<Record<string, string[]>>({});
 
   // Initialize form values
   const initialValues = {
@@ -70,6 +71,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
     after: 14,
     holidays: [] as string[],
     timezone: [] as string[],
+    social_proof: [] as string[],
     privacy_policy_link: '',
     terms_conditions_link: '',
   };
@@ -108,6 +110,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
           timezone: client.timezone || ["America/New_York"],
           privacy_policy_link: client.privacy_policy_link || '',
           terms_conditions_link: client.terms_conditions_link || '',
+          social_proof: client.social_proof || [],
         });
 
         if (client.testimonials) setTestimonials(client.testimonials);
@@ -118,18 +121,26 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
       const fetchSelectedServices = async () => {
         const { data, error } = await supabase
           .from('contractor_services')
-          .select('service_id')
+          .select('service_id, specifications')
           .eq('contractor_id', id);
-
+      
         if (error) {
           console.error('Error fetching selected services:', error);
           return;
         }
-
-        // Extract service IDs and set selected services
+      
         const serviceIds = data.map((item: any) => item.service_id);
         setSelectedServices(serviceIds);
-      };
+      
+        // Initialize specifications with first array item or default
+        const specs: Record<string, string[]> = {};
+        data.forEach((item: any) => {
+          specs[item.service_id] = item.specifications?.length > 0 
+            ? [item.specifications[0]]
+            : [""];
+        });
+        setServiceSpecifications(specs);
+      };      
 
       fetchSelectedServices();
     }
@@ -141,14 +152,20 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
     companyId: Yup.string().required('Company ID is required'),
     slug: Yup.string().required('Slug is required'),
   });
-
-  // Handle service selection
+  
   const handleServiceSelection = (serviceId: string) => {
-    setSelectedServices((prev) =>
-      prev.includes(serviceId)
-        ? prev.filter((id) => id !== serviceId) // Deselect if already selected
-        : [...prev, serviceId] // Select if not already selected
-    );
+    setSelectedServices((prev) => {
+      if (prev.includes(serviceId)) {
+        return prev.filter((id) => id !== serviceId);
+      } else {
+        // Initialize with empty string instead of "Service"
+        setServiceSpecifications(prevSpecs => ({
+          ...prevSpecs,
+          [serviceId]: [""]
+        }));
+        return [...prev, serviceId];
+      }
+    });
   };
 
 
@@ -242,6 +259,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
           timezone: values.timezone,
           privacy_policy_link: values.privacy_policy_link,  
           terms_conditions_link: values.terms_conditions_link,
+          social_proof: values.social_proof,
         };
 
         if (mode === 'edit' && id) {
@@ -251,9 +269,9 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
               .from('contractors')
               .update(clientData)
               .eq('id', id);
-
+            
           if (clientError) throw clientError;
-
+          
           // Update contractor_services table
           const { data: existingServices, error: servicesError } = await supabase
             .from('contractor_services')
@@ -264,14 +282,32 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
 
           const existingServiceIds = existingServices.map((item: any) => item.service_id);
 
-          // Add new services
+          // Add new or update existing services
           for (const serviceId of selectedServices) {
+            const specs = serviceSpecifications[serviceId]?.[0] 
+              ? [serviceSpecifications[serviceId][0]] 
+              : ["Remodel"];
+            
             if (!existingServiceIds.includes(serviceId)) {
+              // Insert new service with specifications
               const { error: insertError } = await supabase
                 .from('contractor_services')
-                .insert([{ contractor_id: id, service_id: serviceId, specifications: '{"Repair", "Remodel"}' }]);
-
+                .insert([{ 
+                  contractor_id: id, 
+                  service_id: serviceId, 
+                  specifications: specs 
+                }]);
+  
               if (insertError) throw insertError;
+            } else {
+              // Update existing service specifications
+              const { error: updateError } = await supabase
+                .from('contractor_services')
+                .update({ specifications: specs })
+                .eq('contractor_id', id)
+                .eq('service_id', serviceId);
+  
+              if (updateError) throw updateError;
             }
           }
 
@@ -300,8 +336,12 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
           for (const serviceId of selectedServices) {
             const { error: insertError } = await supabase
               .from('contractor_services')
-              .insert([{ contractor_id: values.companyId, service_id: serviceId, specifications: '{"Repair", "Remodel"}' }]);
-
+              .insert([{ 
+                contractor_id: values.companyId, 
+                service_id: serviceId, 
+                specifications: serviceSpecifications[serviceId] || [] 
+              }]);
+  
             if (insertError) throw insertError;
           }
         }
@@ -418,7 +458,24 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
     const newTimezones = formik.values.timezone.filter((_, i) => i !== index);
     formik.setFieldValue('timezone', newTimezones);
   };
+
+  const handleAddSocialProof = () => {
+    if (formik.values.social_proof.length < 10) {
+      formik.setFieldValue('social_proof', [...formik.values.social_proof, '']);
+    }
+  };
   
+  const handleRemoveSocialProof = (index: number) => {
+    const newSocialProofs = formik.values.social_proof.filter((_, i) => i !== index);
+    formik.setFieldValue('social_proof', newSocialProofs);
+  };
+
+  const handleSpecificationChange = (serviceId: string, value: string) => {
+    setServiceSpecifications(prev => ({
+      ...prev,
+      [serviceId]: [value]
+    }));
+  };
   
 
   return (
@@ -714,6 +771,33 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                     </div>
                   ))}
                 </div>
+                <div className="sm:col-span-9 sm:col-start-4 mt-1 text-sm text-gray-600">
+                  <p>Add a specification for each of the selected service. For example, "Remodel", "Installation", "Repair". If not added, it defaults to "Remodel". </p>
+
+                </div>
+                {selectedServices.map(serviceId => {
+                  const service = services.find((s: { id: string }) => s.id === serviceId);
+                  const specification = serviceSpecifications[serviceId]?.[0] || "";
+                  
+                  return (
+                    <div key={serviceId} className="sm:col-span-9 sm:col-start-4 mt-1">
+                      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 flex space-x-4">
+                        <div className="flex justify-center items-center">
+                          <h3 className="font-medium text-center">{service?.name} Specification</h3>
+                        </div>
+                        <div className="">
+                          <input
+                            type="text"
+                            className="form-input"
+                            placeholder="Default: Remodel"
+                            value={specification}
+                            onChange={(e) => handleSpecificationChange(serviceId, e.target.value)}
+                          />
+                        </div>  
+                      </div>
+                    </div>
+                  );
+                })}
 
                 <div className="sm:col-span-3">
                   <label className="form-label">Colors</label>
@@ -726,14 +810,6 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                       type="color"
                       className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg"
                       {...formik.getFieldProps('accent')}
-                    />
-                  </div>
-                  <div className='flex items-center gap-2'>
-                    <label className="block text-sm font-medium">Accent Light</label>
-                    <input
-                      type="color"
-                      className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg"
-                      {...formik.getFieldProps('accentLight')}
                     />
                   </div>
                   <div className='flex items-center gap-2'>
@@ -752,6 +828,20 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                       {...formik.getFieldProps('accentDarker')}
                     />
                   </div>
+                  <div className='flex items-center gap-2'>
+                    <label className="block text-sm font-medium">Accent Light</label>
+                    <input
+                      type="color"
+                      className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg"
+                      {...formik.getFieldProps('accentLight')}
+                    />
+                  </div>
+                </div>
+                {/* Note for color pickers */}
+                <div className="sm:col-span-9 col-start-4 text-sm text-gray-600">
+                  <p>
+                    Note: For Accent, Accent Dark, and Accent Darker, please use the same color with different shades or a slightly different hue. If client has a secondary color, use it for Accent Light but make sure to have it in it's lightest shade.
+                  </p>
                 </div>
 
                 {/* Time Slots */}
@@ -927,13 +1017,6 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                     </div>
                   </div>
                 </div>
-
-
-                
-
-
-
-
 
                 {/* Testimonials Section */}
                 <div className="sm:col-span-12 mt-2">
@@ -1145,7 +1228,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                   Optional: Customize media and text. If not defined, default content will be used.
                 </p>
               </div>           
-              <div className="grid sm:grid-cols-12 gap-2 sm:gap-6">            
+              <div className="grid sm:grid-cols-12 gap-2 sm:gap-6">          
                 {/* Image for Header */}
                 <div className="sm:col-span-12">
                   <img src='/header-guide.jpg' alt="header guide" className="w-full border border-gray-200 rounded-xl shadow-sm " />
@@ -1230,6 +1313,71 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                     <div className="text-red-500 text-sm">{formik.errors.bg_photo}</div>
                   ) : null}
                 </div>
+
+                <div className="sm:col-span-12">
+                  <img src='/social-proof.jpg' alt="feature guide" className="w-full border border-gray-200 rounded-xl shadow-sm " />
+                </div>
+
+                <div className="sm:col-span-3">
+                  <label htmlFor="social_proof" className="form-label">Social Proof</label>
+                </div>
+                <div className="sm:col-span-9">
+                  <div className="space-y-3">
+                    {formik.values.social_proof.map((proof, index) => (
+                      <div key={index} className="relative">
+                        <input
+                          type="text"
+                          className="py-3 ps-4 pe-8 block w-full border-gray-200 rounded-lg text-sm border focus:border-blue-500 focus:ring-blue-500"
+                          placeholder="Enter social proof text"
+                          value={proof}
+                          onChange={(e) => {
+                            const newSocialProofs = [...formik.values.social_proof];
+                            newSocialProofs[index] = e.target.value;
+                            formik.setFieldValue('social_proof', newSocialProofs);
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSocialProof(index)}
+                          className="inline-flex absolute top-[15px] end-[10px] text-red-400 cursor-pointer"
+                        >
+                          <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="m15 9-6 6" />
+                            <path d="m9 9 6 6" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {formik.values.social_proof.length < 10 && (
+                    <div className="mt-3 text-end">
+                      <button
+                        type="button"
+                        onClick={handleAddSocialProof}
+                        className="py-1.5 px-2 inline-flex items-center gap-x-1 text-xs font-medium rounded-full border border-dashed border-gray-200 bg-white text-gray-800 hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
+                      >
+                        <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M5 12h14" />
+                          <path d="M12 5v14" />
+                        </svg>
+                        Add Social Proof
+                      </button>
+                    </div>
+                  )}
+                  
+                  {formik.touched.social_proof && formik.errors.social_proof ? (
+                    <div className="text-red-500 text-sm mt-1">{formik.errors.social_proof}</div>
+                  ) : null}
+                </div>  
+                <div className="sm:col-span-9 col-start-4 text-sm text-gray-600">
+                  <p>
+                    Note: Click on the add button and paste the link of the social proof badge. Tip: Inspect the client's website, click on the badge photo, then copy the source of the image.
+                  </p>
+                </div>
+
+                
 
                 {/* Image for Feature */}
                 <div className="sm:col-span-12">
