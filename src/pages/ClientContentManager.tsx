@@ -19,8 +19,7 @@ const ClientContentManager = () => {
       client.content?.logo &&
       client.favicon &&
       client.timezone &&
-      client.privacy_policy_link &&
-      client.social_proof.length > 0 
+      client.privacy_policy_link
     );
   };
 
