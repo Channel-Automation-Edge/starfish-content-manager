@@ -6,7 +6,7 @@ const ClientContentManager = () => {
   const { clients } = useAppContext(); // Access clients from AppContext
   const navigate = useNavigate();
 
-  // Function to determine if a client is complete
+  // Function to determine if a client is complete 
   const isClientComplete = (client: any) => {
     return (
       client.id &&
@@ -167,7 +167,7 @@ const ClientContentManager = () => {
                           </td>
                           <td className="size-px whitespace-wrap max-w-sm">
                             <div className="px-6 py-3">
-                              <ClipboardButton text={`appt.chau.link/${client.slug}?company_id=${client.id}`} />
+                              <ClipboardButton text={`https://appt.chau.link/${client.slug}?company_id=${client.id}`} />
                             </div>
                           </td>
                           <td className="size-px whitespace-nowrap">
