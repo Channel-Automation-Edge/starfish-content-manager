@@ -74,6 +74,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
     social_proof: [] as string[],
     privacy_policy_link: '',
     terms_conditions_link: '',
+    online_confirmation: false,
   };
   
 // Fetch client data and selected services if in edit mode
@@ -111,6 +112,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
           privacy_policy_link: client.privacy_policy_link || '',
           terms_conditions_link: client.terms_conditions_link || '',
           social_proof: client.social_proof || [],
+          online_confirmation: client.online_confirmation || false,
         });
 
         if (client.testimonials) setTestimonials(client.testimonials);
@@ -260,6 +262,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
           privacy_policy_link: values.privacy_policy_link,  
           terms_conditions_link: values.terms_conditions_link,
           social_proof: values.social_proof,
+          online_confirmation: values.online_confirmation,
         };
 
         if (mode === 'edit' && id) {
@@ -747,6 +750,26 @@ const ClientForm: React.FC<ClientFormProps> = ({ mode }) => {
                   {formik.touched.logo && formik.errors.logo ? (
                     <div className="text-red-500 text-sm">{formik.errors.logo}</div>
                   ) : null}
+                </div>
+
+                <div className="sm:col-span-3">
+                  <label className="form-label">Online Confirmation</label>
+                </div>
+                <div className="sm:col-span-9 flex items-center">
+                  <label htmlFor="online-confirmation" className="relative inline-block w-11 h-6 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      id="online-confirmation" 
+                      className="peer sr-only"
+                      checked={formik.values.online_confirmation}
+                      onChange={(e) => formik.setFieldValue('online_confirmation', e.target.checked)}
+                    />
+                    <span className="absolute inset-0 bg-gray-300 rounded-full transition-colors duration-200 ease-in-out peer-checked:bg-blue-600  peer-disabled:opacity-50 peer-disabled:pointer-events-none"></span>
+                    <span className="absolute top-1/2 start-0.5 -translate-y-1/2 size-5 bg-white rounded-full shadow-xs transition-transform duration-200 ease-in-out peer-checked:translate-x-full"></span>
+                  </label>
+                  <span className="ms-3 text-sm text-gray-600">
+                    {formik.values.online_confirmation ? 'Enabled' : 'Disabled'}
+                  </span>
                 </div>
 
                 <div className="sm:col-span-3">
